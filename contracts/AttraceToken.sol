@@ -38,7 +38,7 @@ contract AttraceToken is ERC20Pausable, Ownable, ERC20Mintable {
     mapping (address => VestingPlan) private vestingPlans;
 
     constructor () public {
-         _mint(msg.sender, initialSupply);
+        _mint(msg.sender, initialSupply);
     }
 
     function transfer(address _to, uint256 _value) canTransfer(msg.sender) transferAmountIsUnlocked(msg.sender, _value) public returns (bool) {
@@ -52,7 +52,7 @@ contract AttraceToken is ERC20Pausable, Ownable, ERC20Mintable {
     modifier canTransfer(address _sender) {
         if (!transfersEnabled) {
             if (!transferWhitelist[_sender]) {
-                revert();
+                revert("cannot transfer");
             }
         }
         _;
@@ -71,7 +71,7 @@ contract AttraceToken is ERC20Pausable, Ownable, ERC20Mintable {
 
     modifier whenTransfersEnabled(bool _status) {
         if (transfersEnabled != _status) {
-            revert();
+            revert("transfers are not enabled");
         }
         _;
     }
@@ -124,16 +124,16 @@ contract AttraceToken is ERC20Pausable, Ownable, ERC20Mintable {
     function updateVestingPlan(address _addr) whenTransfersEnabled(true) public onlyOwner returns (uint64) {
         require(_addr != address(0));
         if (vestingPlans[_addr].lockedAmountRemaining > 0) {
-            uint256 timeSinceIncubation = block.timestamp - incubationTime;
+            uint256 timeSinceIncubation = block.timestamp - incubationTime;  // this should be changed, as it's not secure.
             uint8 newStage;
             if (vestingPlans[_addr].team) {
                 if (timeSinceIncubation <= 180 days) {
                     newStage = 4;
                 } else if (timeSinceIncubation > 180 days && timeSinceIncubation <= now + 365 days) {
                     newStage = 3;
-                } else if (timeSinceIncubation > now + 365 days && timeSinceIncubation <= (now + 365 days + 180 days)) {
+                } else if (timeSinceIncubation > now + 365 days && timeSinceIncubation <= (now + 545 days)) {
                     newStage = 2;
-                } else if (timeSinceIncubation > (now + 365 days + 180 days) && timeSinceIncubation <= now + 365 days + 365 days) {
+                } else if (timeSinceIncubation > (now + 545 days) && timeSinceIncubation <= now + 730 days) {
                     newStage = 1;
                 } else {
                     newStage = 0;
